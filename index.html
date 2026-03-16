@@ -33,7 +33,7 @@
     z-index: 100;
   }
   .logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; } @media (max-width: 768px) {   .nav-links { display: none; }   .logo { font-size: 1.2rem; } }
   .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s; }
   .nav-links a:hover { color: var(--text); }
   .nav-right { display: flex; gap: 1rem; align-items: center; }
@@ -186,7 +186,7 @@
     <p>India's AI-powered revision companion — built by a Class 12 student, for students</p>
     <div class="hero-btns">
       <button class="btn btn-primary" onclick="showPage('notes')">📚 Browse Notes</button>
-      <button class="btn btn-secondary" onclick="showPage('notes')">📖 Browse All Notes</button>
+      <button class="btn btn-secondary" onclick="showPage('revision')">⚡ Quick Revision</button>
     </div>
   </div>
 
