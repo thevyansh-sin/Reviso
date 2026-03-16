@@ -841,7 +841,7 @@ async function sendMessage() {
   }
 }
 
-function askQuestion(q) {
+function toggleMenu() {   document.getElementById('mobileMenu').classList.toggle('open'); } function askQuestion(q) {
   document.getElementById('userInput').value = q;
   sendMessage();
 }
