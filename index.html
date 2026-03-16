@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NoteNest – Smart Revision for Students</title>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --card: #1a1a2e;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #2d2d4e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; }
+  body.light { --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --muted: #64748b; --border: #e2e8f0; }
+
+  /* NAV */
+  nav {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-right { display: flex; gap: 1rem; align-items: center; }
+  .theme-btn { background: var(--border); border: none; color: var(--text); padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+
+  /* PAGES */
+  .page { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* HOME */
+  .hero { text-align: center; padding: 4rem 1rem; }
+  .hero h1 { font-size: 3rem; font-weight: 900; line-height: 1.2; margin-bottom: 1rem; }
+  .hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: var(--muted); font-size: 1.1rem; margin-bottom: 2rem; }
+  .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.75rem 1.75rem; border-radius: 10px; border: none; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); }
+
+  /* COUNTDOWN */
+  .countdown-section { margin: 2rem auto; max-width: 800px; }
+  .countdown-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+  .countdown-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; text-align: center; }
+  .countdown-card h3 { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; }
+  .countdown-days { font-size: 3rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .countdown-label { font-size: 0.8rem; color: var(--muted); }
+
+  /* FEATURE CARDS */
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+  .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; cursor: pointer; transition: all 0.2s; }
+  .feature-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+  .feature-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .feature-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .feature-card p { color: var(--muted); font-size: 0.9rem; }
+
+  /* SECTION TITLES */
+  .section-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .section-sub { color: var(--muted); margin-bottom: 2rem; }
+
+  /* NOTES */
+  .subject-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .subject-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .subject-header { padding: 1.25rem; display: flex; align-items: center; gap: 1rem; }
+  .subject-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+  .subject-card h3 { font-size: 1.1rem; font-weight: 700; }
+  .chapter-list { padding: 0 1.25rem 1.25rem; }
+  .chapter-item { padding: 0.6rem 0; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 0.9rem; color: var(--muted); transition: color 0.2s; }
+  .chapter-item:hover { color: var(--accent2); }
+  .chapter-item span { font-size: 0.75rem; background: var(--border); padding: 0.2rem 0.5rem; border-radius: 6px; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .modal h2 { font-size: 1.4rem; }
+  .close-btn { background: none; border: none; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+  .notes-content h3 { color: var(--accent2); margin: 1.2rem 0 0.5rem; font-size: 1rem; }
+  .notes-content p { color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+  .notes-content ul { color: var(--muted); font-size: 0.9rem; padding-left: 1.5rem; line-height: 2; }
+  .formula-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin: 0.5rem 0; font-family: monospace; color: var(--accent2); font-size: 0.9rem; }
+
+  /* TRACKER */
+  .tracker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+  .tracker-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; }
+  .tracker-card h4 { margin-bottom: 1rem; font-size: 1rem; }
+  .tracker-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0; font-size: 0.9rem; color: var(--muted); cursor: pointer; }
+  .tracker-item input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+  .tracker-item.checked { color: var(--accent2); text-decoration: line-through; }
+  .progress-bar { background: var(--border); border-radius: 99px; height: 6px; margin-top: 1rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width 0.3s; }
+
+  /* AI DOUBT */
+  .ai-section { max-width: 750px; margin: 0 auto; }
+  .ai-chat { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; min-height: 400px; max-height: 400px; overflow-y: auto; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+  .chat-msg { padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.6; max-width: 85%; }
+  .chat-msg.user { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .chat-msg.ai { background: var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+  .chat-msg.typing { color: var(--muted); font-style: italic; }
+  .ai-input-row { display: flex; gap: 0.75rem; }
+  .ai-input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text); font-size: 0.9rem; outline: none; }
+  .ai-input:focus { border-color: var(--accent); }
+  .api-key-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+  .api-key-input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text); font-size: 0.85rem; outline: none; }
+  .api-key-input:focus { border-color: var(--accent); }
+  .suggested-questions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+  .suggested-q { background: var(--border); border: none; color: var(--muted); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+  .suggested-q:hover { background: var(--accent); color: white; }
+
+  /* POMODORO */
+  .pomodoro { max-width: 400px; margin: 0 auto; text-align: center; }
+  .timer-display { font-size: 5rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 2rem 0; }
+  .timer-btns { display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; }
+  .timer-mode { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; }
+  .mode-btn { background: var(--border); border: none; color: var(--muted); padding: 0.4rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+  .mode-btn.active { background: var(--accent); color: white; }
+
+  /* REVISION */
+  .revision-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+  .revision-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; cursor: pointer; transition: all 0.2s; }
+  .revision-card:hover { border-color: var(--accent2); transform: translateY(-3px); }
+  .revision-card h4 { font-size: 1rem; margin-bottom: 0.5rem; }
+  .revision-card p { color: var(--muted); font-size: 0.85rem; }
+  .revision-tag { display: inline-block; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 6px; margin-bottom: 0.75rem; }
+
+  /* ABOUT */
+  .about-section { max-width: 700px; margin: 0 auto; }
+  .about-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; text-align: center; }
+  .about-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem; }
+  .about-card h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  .about-card .role { color: var(--accent2); margin-bottom: 1.5rem; font-size: 1rem; }
+  .about-card p { color: var(--muted); line-height: 1.8; font-size: 0.95rem; margin-bottom: 1rem; }
+  .stats-row { display: flex; gap: 1.5rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-label { font-size: 0.8rem; color: var(--muted); }
+
+  /* PYQ */
+  .pyq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+  .pyq-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; }
+  .pyq-card h4 { margin-bottom: 1rem; font-size: 1rem; color: var(--accent2); }
+  .pyq-item { padding: 0.6rem 0; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+  .pyq-year { font-size: 0.75rem; background: var(--accent); color: white; padding: 0.1rem 0.5rem; border-radius: 6px; margin-right: 0.5rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">🪺 NoteNest</div>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')">Home</a></li>
+    <li><a onclick="showPage('notes')">Notes</a></li>
+    <li><a onclick="showPage('revision')">Quick Revision</a></li>
+    <li><a onclick="showPage('pyq')">PYQ Corner</a></li>
+    <li><a onclick="showPage('ai')">AI Doubt Solver</a></li>
+    <li><a onclick="showPage('tools')">Study Tools</a></li>
+    <li><a onclick="showPage('about')">About</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="home" class="page active">
+  <div class="hero">
+    <h1>Study Smarter,<br><span>Not Harder</span></h1>
+    <p>India's AI-powered revision companion — built by a Class 12 student, for students</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary" onclick="showPage('notes')">📚 Browse Notes</button>
+      <button class="btn btn-secondary" onclick="showPage('ai')">🤖 Ask AI Anything</button>
+    </div>
+  </div>
+
+  <div class="countdown-section">
+    <h2 style="text-align:center; margin-bottom:1.5rem; font-size:1.2rem; color:var(--muted)">⏳ Exam Countdown</h2>
+    <div class="countdown-grid">
+      <div class="countdown-card">
+        <h3>📋 CBSE Boards 2026</h3>
+        <div class="countdown-days" id="boards-days">--</div>
+        <div class="countdown-label">days remaining</div>
+      </div>
+      <div class="countdown-card">
+        <h3>🔬 JEE Mains</h3>
+        <div class="countdown-days" id="jee-days">--</div>
+        <div class="countdown-label">days remaining</div>
+      </div>
+      <div class="countdown-card">
+        <h3>🩺 NEET 2026</h3>
+        <div class="countdown-days" id="neet-days">--</div>
+        <div class="countdown-label">days remaining</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature-card" onclick="showPage('notes')">
+      <div class="feature-icon">📚</div>
+      <h3>Notes Library</h3>
+      <p>Chapter-wise notes for Maths, Physics & Chemistry with formulas and key points</p>
+    </div>
+    <div class="feature-card" onclick="showPage('revision')">
+      <div class="feature-icon">⚡</div>
+      <h3>5-Min Revision</h3>
+      <p>Quick revision cards for last-minute prep before exams</p>
+    </div>
+    <div class="feature-card" onclick="showPage('ai')">
+      <div class="feature-icon">🤖</div>
+      <h3>AI Doubt Solver</h3>
+      <p>Get instant answers in simple student-friendly language</p>
+    </div>
+    <div class="feature-card" onclick="showPage('pyq')">
+      <div class="feature-icon">📝</div>
+      <h3>PYQ Corner</h3>
+      <p>Previous year questions chapter-wise for boards and entrance exams</p>
+    </div>
+    <div class="feature-card" onclick="showPage('tools')">
+      <div class="feature-icon">⏱️</div>
+      <h3>Study Tools</h3>
+      <p>Pomodoro timer and chapter confidence tracker to boost productivity</p>
+    </div>
+    <div class="feature-card" onclick="showPage('about')">
+      <div class="feature-icon">👤</div>
+      <h3>About NoteNest</h3>
+      <p>Built by a student who was tired of expensive and scattered study resources</p>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div id="notes" class="page">
+  <h2 class="section-title">📚 Notes Library</h2>
+  <p class="section-sub">Class 12 PCM — Chapter-wise short notes, formulas & key points</p>
+  <div class="subject-grid">
+    <div class="subject-card">
+      <div class="subject-header">
+        <div class="subject-icon" style="background:#312e81">📐</div>
+        <div><h3>Mathematics</h3><p style="color:var(--muted);font-size:0.8rem">14 chapters</p></div>
+      </div>
+      <div class="chapter-list">
+        <div class="chapter-item" onclick="openNotes('matrices')">Relations & Functions <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('matrices')">Matrices & Determinants <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('calculus')">Differentiation <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('integration')">Integration <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('vectors')">Vectors & 3D Geometry <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('probability')">Probability <span>View</span></div>
+      </div>
+    </div>
+    <div class="subject-card">
+      <div class="subject-header">
+        <div class="subject-icon" style="background:#1e3a5f">⚛️</div>
+        <div><h3>Physics</h3><p style="color:var(--muted);font-size:0.8rem">15 chapters</p></div>
+      </div>
+      <div class="chapter-list">
+        <div class="chapter-item" onclick="openNotes('electrostatics')">Electrostatics <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('current')">Current Electricity <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('magnetism')">Magnetism <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('optics')">Ray & Wave Optics <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('modern')">Modern Physics <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('semiconductor')">Semiconductors <span>View</span></div>
+      </div>
+    </div>
+    <div class="subject-card">
+      <div class="subject-header">
+        <div class="subject-icon" style="background:#1a3a2a">🧪</div>
+        <div><h3>Chemistry</h3><p style="color:var(--muted);font-size:0.8rem">16 chapters</p></div>
+      </div>
+      <div class="chapter-list">
+        <div class="chapter-item" onclick="openNotes('solutions')">Solutions <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('electrochemistry')">Electrochemistry <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('kinetics')">Chemical Kinetics <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('coordination')">Coordination Compounds <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('organic')">Organic Chemistry <span>View</span></div>
+        <div class="chapter-item" onclick="openNotes('polymers')">Polymers & Biomolecules <span>View</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK REVISION -->
+<div id="revision" class="page">
+  <h2 class="section-title">⚡ Quick Revision</h2>
+  <p class="section-sub">Revise any chapter in 5 minutes — perfect for last-minute prep</p>
+  <div class="revision-grid">
+    <div class="revision-card" onclick="openNotes('matrices')">
+      <span class="revision-tag" style="background:#312e81">Maths</span>
+      <h4>Matrices & Determinants</h4>
+      <p>Key formulas, properties and common exam questions</p>
+    </div>
+    <div class="revision-card" onclick="openNotes('integration')">
+      <span class="revision-tag" style="background:#312e81">Maths</span>
+      <h4>Integration</h4>
+      <p>Standard integrals, by-parts formula and tricks</p>
+    </div>
+    <div class="revision-card" onclick="openNotes('electrostatics')">
+      <span class="revision-tag" style="background:#1e3a5f">Physics</span>
+      <h4>Electrostatics</h4>
+      <p>Coulomb's law, electric field, potential and capacitors</p>
+    </div>
+    <div class="revision-card" onclick="openNotes('current')">
+      <span class="revision-tag" style="background:#1e3a5f">Physics</span>
+      <h4>Current Electricity</h4>
+      <p>Ohm's law, Kirchhoff's laws, Wheatstone bridge</p>
+    </div>
+    <div class="revision-card" onclick="openNotes('electrochemistry')">
+      <span class="revision-tag" style="background:#1a3a2a">Chemistry</span>
+      <h4>Electrochemistry</h4>
+      <p>EMF, Nernst equation, electrolysis key formulas</p>
+    </div>
+    <div class="revision-card" onclick="openNotes('kinetics')">
+      <span class="revision-tag" style="background:#1a3a2a">Chemistry</span>
+      <h4>Chemical Kinetics</h4>
+      <p>Rate laws, Arrhenius equation and half-life</p>
+    </div>
+  </div>
+</div>
+
+<!-- PYQ CORNER -->
+<div id="pyq" class="page">
+  <h2 class="section-title">📝 PYQ Corner</h2>
+  <p class="section-sub">Previous Year Questions — Most important for Boards & JEE</p>
+  <div class="pyq-grid">
+    <div class="pyq-card">
+      <h4>📐 Mathematics</h4>
+      <div class="pyq-item"><span class="pyq-year">2024</span>Find the value of the determinant of a 3×3 matrix using cofactors.</div>
+      <div class="pyq-item"><span class="pyq-year">2023</span>Evaluate ∫(x² + 1)/(x⁴ + 1) dx using substitution method.</div>
+      <div class="pyq-item"><span class="pyq-year">2023</span>Find the angle between two lines whose direction cosines are given.</div>
+      <div class="pyq-item"><span class="pyq-year">2022</span>Using integration, find the area bounded by the curve y = x² and y = x.</div>
+      <div class="pyq-item"><span class="pyq-year">2022</span>Solve the differential equation dy/dx + y = e^x.</div>
+    </div>
+    <div class="pyq-card">
+      <h4>⚛️ Physics</h4>
+      <div class="pyq-item"><span class="pyq-year">2024</span>Derive expression for electric field due to an infinite plane sheet of charge.</div>
+      <div class="pyq-item"><span class="pyq-year">2023</span>State and explain Kirchhoff's voltage law. Apply it to a Wheatstone bridge.</div>
+      <div class="pyq-item"><span class="pyq-year">2023</span>What is total internal reflection? Give two applications.</div>
+      <div class="pyq-item"><span class="pyq-year">2022</span>Draw a labeled diagram of a moving coil galvanometer and explain its working.</div>
+      <div class="pyq-item"><span class="pyq-year">2022</span>Explain photoelectric effect and state Einstein's photoelectric equation.</div>
+    </div>
+    <div class="pyq-card">
+      <h4>🧪 Chemistry</h4>
+      <div class="pyq-item"><span class="pyq-year">2024</span>What is Raoult's law? Derive the expression for relative lowering of vapour pressure.</div>
+      <div class="pyq-item"><span class="pyq-year">2023</span>Write the Nernst equation and calculate cell EMF at non-standard conditions.</div>
+      <div class="pyq-item"><span class="pyq-year">2023</span>Explain the mechanism of SN1 and SN2 reactions with examples.</div>
+      <div class="pyq-item"><span class="pyq-year">2022</span>What is crystal field theory? Explain splitting of d-orbitals in octahedral field.</div>
+      <div class="pyq-item"><span class="pyq-year">2022</span>Differentiate between addition and condensation polymerization with examples.</div>
+    </div>
+  </div>
+</div>
+
+<!-- AI DOUBT SOLVER -->
+<div id="ai" class="page">
+  <h2 class="section-title">🤖 AI Doubt Solver</h2>
+  <p class="section-sub">Ask anything — explained in simple student-friendly language</p>
+  <div class="ai-section">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1rem;font-size:0.85rem;color:var(--muted)">
+      🔑 Enter your Gemini API key below to activate the AI. Get it free from <strong style="color:var(--accent2)">aistudio.google.com</strong>
+    </div>
+    <div class="api-key-row">
+      <input class="api-key-input" id="apiKey" type="password" placeholder="Paste your Gemini API key here (AIzaSy...)">
+      <button class="btn btn-primary" onclick="saveKey()">Save Key</button>
+    </div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem">💡 Try asking:</p>
+    <div class="suggested-questions">
+      <button class="suggested-q" onclick="askQuestion('Explain integration by parts simply')">Integration by parts</button>
+      <button class="suggested-q" onclick="askQuestion('What is Coulombs law explain simply')">Coulomb's Law</button>
+      <button class="suggested-q" onclick="askQuestion('Explain Nernst equation with example')">Nernst Equation</button>
+      <button class="suggested-q" onclick="askQuestion('What are eigen values of a matrix')">Eigenvalues</button>
+      <button class="suggested-q" onclick="askQuestion('Explain photoelectric effect simply')">Photoelectric Effect</button>
+    </div>
+    <div class="ai-chat" id="chatBox">
+      <div class="chat-msg ai">👋 Hi! I'm your AI study buddy. Ask me anything about Maths, Physics or Chemistry and I'll explain it like you're 16! 🎓</div>
+    </div>
+    <div class="ai-input-row">
+      <input class="ai-input" id="userInput" placeholder="Type your doubt here..." onkeydown="if(event.key==='Enter') sendMessage()">
+      <button class="btn btn-primary" onclick="sendMessage()">Ask →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STUDY TOOLS -->
+<div id="tools" class="page">
+  <h2 class="section-title">⏱️ Study Tools</h2>
+  <p class="section-sub">Pomodoro timer + Chapter confidence tracker</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:3rem" class="tools-grid">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem">
+      <h3 style="text-align:center;margin-bottom:1rem">🍅 Pomodoro Timer</h3>
+      <div class="timer-mode">
+        <button class="mode-btn active" onclick="setMode(25,0,'Focus')" id="mode-focus">Focus 25m</button>
+        <button class="mode-btn" onclick="setMode(5,0,'Short Break')" id="mode-short">Break 5m</button>
+        <button class="mode-btn" onclick="setMode(15,0,'Long Break')" id="mode-long">Long 15m</button>
+      </div>
+      <div class="timer-display" id="timerDisplay">25:00</div>
+      <div class="timer-btns">
+        <button class="btn btn-primary" onclick="startTimer()" id="startBtn">▶ Start</button>
+        <button class="btn btn-secondary" onclick="resetTimer()">↺ Reset</button>
+      </div>
+      <p style="text-align:center;color:var(--muted);font-size:0.85rem" id="timerLabel">Stay focused for 25 minutes!</p>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem">
+      <h3 style="margin-bottom:1rem">📊 Today's Study Stats</h3>
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.4rem"><span>Maths</span><span id="mathPct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="mathBar" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.4rem"><span>Physics</span><span id="physPct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="physBar" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.4rem"><span>Chemistry</span><span id="chemPct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="chemBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem">✅ Check off chapters in the tracker below to update progress!</p>
+    </div>
+  </div>
+
+  <h3 style="margin-bottom:1rem">📋 Chapter Confidence Tracker</h3>
+  <div class="tracker-grid" id="trackerGrid"></div>
+</div>
+
+<!-- ABOUT -->
+<div id="about" class="page">
+  <div class="about-section">
+    <div class="about-card">
+      <div class="about-avatar">👨‍💻</div>
+      <h2>NoteNest</h2>
+      <p class="role">🚀 Built by a Class 12 PCM Student</p>
+      <p>I'm a Class 12 student who was tired of scattered notes, expensive platforms, and studying alone at 2am with no one to ask doubts to.</p>
+      <p>So I built NoteNest — a completely free platform with AI-powered doubt solving, quick revision cards, previous year questions, and study tools. Everything a student needs, in one place.</p>
+      <p><strong style="color:var(--accent2)">NoteNest is free. Forever. No ads. No subscriptions.</strong></p>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-num">3</div><div class="stat-label">Subjects</div></div>
+        <div class="stat"><div class="stat-num">36+</div><div class="stat-label">Chapters</div></div>
+        <div class="stat"><div class="stat-num">∞</div><div class="stat-label">AI Answers</div></div>
+        <div class="stat"><div class="stat-num">0₹</div><div class="stat-label">Cost</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES MODAL -->
+<div class="modal-overlay" id="notesModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Chapter Notes</h2>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="notes-content" id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+// ---- PAGE NAVIGATION ----
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ---- THEME ----
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  document.querySelector('.theme-btn').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+}
+
+// ---- COUNTDOWN ----
+function updateCountdowns() {
+  const now = new Date();
+  const exams = {
+    'boards-days': new Date('2026-02-15'),
+    'jee-days': new Date('2026-04-02'),
+    'neet-days': new Date('2026-05-03')
+  };
+  for (const [id, date] of Object.entries(exams)) {
+    const diff = Math.ceil((date - now) / (1000*60*60*24));
+    document.getElementById(id).textContent = diff > 0 ? diff : '🎉 Done!';
+  }
+}
+updateCountdowns();
+
+// ---- NOTES DATA ----
+const notesData = {
+  matrices: {
+    title: '📐 Matrices & Determinants',
+    content: `
+      <h3>📌 Key Concepts</h3>
+      <ul>
+        <li>Matrix: Rectangular array of numbers arranged in rows and columns</li>
+        <li>Order of matrix: m × n (m = rows, n = columns)</li>
+        <li>Square matrix: m = n</li>
+        <li>Identity matrix: diagonal elements = 1, rest = 0</li>
+      </ul>
+      <h3>🔢 Important Formulas</h3>
+      <div class="formula-box">|AB| = |A| × |B|</div>
+      <div class="formula-box">adj(A) = transpose of cofactor matrix</div>
+      <div class="formula-box">A⁻¹ = adj(A) / |A|   (if |A| ≠ 0)</div>
+      <div class="formula-box">For 2×2: |A| = ad - bc</div>
+      <h3>⚠️ Common Mistakes</h3>
+      <ul>
+        <li>AB ≠ BA (matrix multiplication is NOT commutative)</li>
+        <li>Always check if |A| ≠ 0 before finding inverse</li>
+        <li>Transpose of AB = Bᵀ × Aᵀ (order reverses)</li>
+      </ul>
+      <h3>✅ Expected Exam Questions</h3>
+      <ul>
+        <li>Find inverse of a 2×2 or 3×3 matrix</li>
+        <li>Solve system of equations using matrix method</li>
+        <li>Prove a matrix is singular/non-singular</li>
+      </ul>
+    `
+  },
+  integration: {
+    title: '📐 Integration',
+    content: `
+      <h3>📌 Standard Integrals</h3>
+      <div class="formula-box">∫xⁿ dx = xⁿ⁺¹/(n+1) + C</div>
+      <div class="formula-box">∫eˣ dx = eˣ + C</div>
+      <div class="formula-box">∫sin x dx = -cos x + C</div>
+      <div class="formula-box">∫cos x dx = sin x + C</div>
+      <div class="formula-box">∫1/x dx = ln|x| + C</div>
+      <h3>🔢 Integration by Parts</h3>
+      <div class="formula-box">∫u·v dx = u·∫v dx − ∫(u'·∫v dx) dx</div>
+      <p>ILATE Rule — choose u in this order: Inverse trig, Log, Algebraic, Trig, Exponential</p>
+      <h3>⚠️ Common Mistakes</h3>
+      <ul>
+        <li>Forgetting + C in indefinite integrals</li>
+        <li>Wrong ILATE order selection</li>
+        <li>Sign errors in trigonometric integrals</li>
+      </ul>
+    `
+  },
+  electrostatics: {
+    title: '⚛️ Electrostatics',
+    content: `
+      <h3>📌 Key Concepts</h3>
+      <ul>
+        <li>Electric charge: fundamental property, SI unit = Coulomb (C)</li>
+        <li>Like charges repel, unlike charges attract</li>
+        <li>Charge is quantized: q = ne</li>
+      </ul>
+      <h3>🔢 Important Formulas</h3>
+      <div class="formula-box">Coulomb's Law: F = kq₁q₂/r²  (k = 9×10⁹)</div>
+      <div class="formula-box">Electric Field: E = F/q = kQ/r²</div>
+      <div class="formula-box">Electric Potential: V = kQ/r</div>
+      <div class="formula-box">Capacitance: C = Q/V</div>
+      <div class="formula-box">Energy stored: U = ½CV²</div>
+      <h3>⚠️ Common Mistakes</h3>
+      <ul>
+        <li>Confusing E (field) with V (potential) — field is vector, potential is scalar</li>
+        <li>Forgetting to square r in Coulomb's law</li>
+        <li>Inside conductor E = 0 but V ≠ 0</li>
+      </ul>
+    `
+  },
+  current: {
+    title: '⚛️ Current Electricity',
+    content: `
+      <h3>📌 Key Concepts</h3>
+      <ul>
+        <li>Electric current: rate of flow of charge I = Q/t</li>
+        <li>Ohm's Law: V = IR (valid for ohmic conductors)</li>
+        <li>Resistivity depends on temperature and material</li>
+      </ul>
+      <h3>🔢 Important Formulas</h3>
+      <div class="formula-box">Ohm's Law: V = IR</div>
+      <div class="formula-box">Resistance: R = ρL/A</div>
+      <div class="formula-box">Series: R = R₁ + R₂ + R₃</div>
+      <div class="formula-box">Parallel: 1/R = 1/R₁ + 1/R₂ + 1/R₃</div>
+      <div class="formula-box">Kirchhoff's Current Law: ΣI(in) = ΣI(out)</div>
+      <div class="formula-box">Kirchhoff's Voltage Law: ΣV = 0 (in a loop)</div>
+    `
+  },
+  electrochemistry: {
+    title: '🧪 Electrochemistry',
+    content: `
+      <h3>📌 Key Concepts</h3>
+      <ul>
+        <li>EMF: difference in electrode potentials</li>
+        <li>Anode: oxidation (loses electrons)</li>
+        <li>Cathode: reduction (gains electrons)</li>
+        <li>Standard hydrogen electrode (SHE): E° = 0 V</li>
+      </ul>
+      <h3>🔢 Important Formulas</h3>
+      <div class="formula-box">Nernst Equation: E = E° − (RT/nF)ln Q</div>
+      <div class="formula-box">At 25°C: E = E° − (0.0592/n)log Q</div>
+      <div class="formula-box">ΔG° = −nFE°</div>
+      <div class="formula-box">Faraday's Law: m = ZIt = (M/nF)×Q</div>
+    `
+  },
+  kinetics: {
+    title: '🧪 Chemical Kinetics',
+    content: `
+      <h3>📌 Key Concepts</h3>
+      <ul>
+        <li>Rate of reaction: change in concentration per unit time</li>
+        <li>Order of reaction: sum of powers in rate law</li>
+        <li>Molecularity: number of molecules in elementary step</li>
+      </ul>
+      <h3>🔢 Important Formulas</h3>
+      <div class="formula-box">Rate = k[A]ˣ[B]ʸ</div>
+      <div class="formula-box">First order: t½ = 0.693/k</div>
+      <div class="formula-box">Arrhenius: k = Ae^(-Ea/RT)</div>
+      <div class="formula-box">log(k₂/k₁) = Ea/2.303R × (1/T₁ − 1/T₂)</div>
+    `
+  },
+  calculus: {
+    title: '📐 Differentiation',
+    content: `
+      <h3>🔢 Key Derivative Formulas</h3>
+      <div class="formula-box">d/dx(xⁿ) = nxⁿ⁻¹</div>
+      <div class="formula-box">d/dx(sin x) = cos x</div>
+      <div class="formula-box">d/dx(cos x) = −sin x</div>
+      <div class="formula-box">d/dx(eˣ) = eˣ</div>
+      <div class="formula-box">d/dx(ln x) = 1/x</div>
+      <h3>📌 Chain Rule</h3>
+      <div class="formula-box">d/dx[f(g(x))] = f'(g(x)) × g'(x)</div>
+      <h3>⚠️ Common Mistakes</h3>
+      <ul>
+        <li>Forgetting chain rule for composite functions</li>
+        <li>d/dx(tan x) = sec²x NOT sec x</li>
+      </ul>
+    `
+  },
+  vectors: {
+    title: '📐 Vectors & 3D Geometry',
+    content: `
+      <h3>🔢 Key Formulas</h3>
+      <div class="formula-box">|A| = √(a² + b² + c²)</div>
+      <div class="formula-box">A·B = |A||B|cosθ (dot product)</div>
+      <div class="formula-box">|A×B| = |A||B|sinθ (cross product)</div>
+      <div class="formula-box">Distance between points = √(Δx²+Δy²+Δz²)</div>
+      <h3>📌 Direction Cosines</h3>
+      <div class="formula-box">l² + m² + n² = 1</div>
+      <div class="formula-box">cos²α + cos²β + cos²γ = 1</div>
+    `
+  },
+  probability: {
+    title: '📐 Probability',
+    content: `
+      <h3>🔢 Key Formulas</h3>
+      <div class="formula-box">P(A∪B) = P(A) + P(B) − P(A∩B)</div>
+      <div class="formula-box">P(A|B) = P(A∩B)/P(B)</div>
+      <div class="formula-box">Bayes: P(A|B) = P(B|A)P(A)/P(B)</div>
+      <div class="formula-box">Binomial: P(X=r) = ⁿCᵣ pʳ qⁿ⁻ʳ</div>
+      <h3>⚠️ Common Mistakes</h3>
+      <ul>
+        <li>P(A)+P(A') = 1 always</li>
+        <li>Independent ≠ mutually exclusive</li>
+      </ul>
+    `
+  },
+  magnetism: { title: '⚛️ Magnetism', content: '<h3>🔢 Key Formulas</h3><div class="formula-box">F = qv×B (Lorentz force)</div><div class="formula-box">F = BIL sinθ</div><div class="formula-box">Biot-Savart: dB = μ₀/4π × IdL×r̂/r²</div><div class="formula-box">Solenoid: B = μ₀nI</div>' },
+  optics: { title: '⚛️ Ray & Wave Optics', content: '<h3>🔢 Key Formulas</h3><div class="formula-box">Snell\'s Law: n₁sinθ₁ = n₂sinθ₂</div><div class="formula-box">Mirror: 1/f = 1/v + 1/u</div><div class="formula-box">Lens: 1/f = 1/v − 1/u</div><div class="formula-box">Young\'s double slit: β = λD/d</div>' },
+  modern: { title: '⚛️ Modern Physics', content: '<h3>🔢 Key Formulas</h3><div class="formula-box">E = hν (photon energy)</div><div class="formula-box">KE_max = hν − φ (photoelectric)</div><div class="formula-box">de Broglie: λ = h/mv</div><div class="formula-box">Radioactive decay: N = N₀e^(−λt)</div>' },
+  semiconductor: { title: '⚛️ Semiconductors', content: '<h3>📌 Key Concepts</h3><ul><li>Intrinsic: pure semiconductor</li><li>n-type: donor impurity (pentavalent)</li><li>p-type: acceptor impurity (trivalent)</li><li>Diode: allows current in one direction only</li></ul><h3>🔢 Logic Gates</h3><div class="formula-box">AND: Y = A·B | OR: Y = A+B | NOT: Y = A\'</div>' },
+  solutions: { title: '🧪 Solutions', content: '<h3>🔢 Key Formulas</h3><div class="formula-box">Mole fraction: x = n/(n+N)</div><div class="formula-box">Raoult\'s Law: p = x × p°</div><div class="formula-box">Elevation in BP: ΔTb = Kb × m</div><div class="formula-box">Depression in FP: ΔTf = Kf × m</div><div class="formula-box">Osmotic pressure: π = MRT</div>' },
+  coordination: { title: '🧪 Coordination Compounds', content: '<h3>📌 Key Concepts</h3><ul><li>Central metal ion + ligands = complex</li><li>Coordination number = ligands attached directly</li><li>Chelate: polydentate ligand forms ring</li></ul><h3>📌 IUPAC Naming</h3><ul><li>Name ligands alphabetically before metal</li><li>Negative ligands end in -o, neutral unchanged</li></ul>' },
+  organic: { title: '🧪 Organic Chemistry', content: '<h3>📌 Reaction Types</h3><ul><li>SN1: carbocation intermediate, 1st order</li><li>SN2: backside attack, 2nd order, inversion</li><li>E1/E2: elimination reactions</li><li>Markovnikov\'s rule: H adds to C with more H</li></ul>' },
+  polymers: { title: '🧪 Polymers & Biomolecules', content: '<h3>📌 Types of Polymers</h3><ul><li>Addition: no byproduct (polyethylene, PVC)</li><li>Condensation: small molecule released (nylon, polyester)</li><li>Natural: starch, cellulose, proteins, DNA</li></ul><h3>📌 Biomolecules</h3><ul><li>Carbohydrates: energy source, (CH₂O)n</li><li>Proteins: made of amino acids, peptide bonds</li><li>DNA/RNA: nucleotides, genetic information</li></ul>' }
+};
+
+function openNotes(chapter) {
+  const data = notesData[chapter];
+  if (!data) return;
+  document.getElementById('modalTitle').textContent = data.title;
+  document.getElementById('modalContent').innerHTML = data.content;
+  document.getElementById('notesModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('notesModal').classList.remove('open');
+}
+document.getElementById('notesModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ---- TRACKER ----
+const chapters = {
+  'Maths': ['Relations & Functions','Matrices','Determinants','Continuity','Differentiation','Integration','Area Under Curves','Differential Equations','Vectors','3D Geometry','Linear Programming','Probability'],
+  'Physics': ['Electrostatics','Current Electricity','Magnetic Effects','Magnetism','EMI','AC Circuits','EM Waves','Ray Optics','Wave Optics','Dual Nature','Atoms','Nuclei','Semiconductors'],
+  'Chemistry': ['Solutions','Electrochemistry','Chemical Kinetics','d-f Block','Coordination Compounds','Haloalkanes','Alcohols','Aldehydes','Amines','Biomolecules','Polymers','Environmental Chem']
+};
+
+function buildTracker() {
+  const grid = document.getElementById('trackerGrid');
+  grid.innerHTML = '';
+  for (const [subject, chs] of Object.entries(chapters)) {
+    const card = document.createElement('div');
+    card.className = 'tracker-card';
+    card.innerHTML = `<h4>${subject === 'Maths' ? '📐' : subject === 'Physics' ? '⚛️' : '🧪'} ${subject}</h4>` +
+      chs.map(ch => {
+        const key = `tracker_${subject}_${ch}`;
+        const checked = localStorage.getItem(key) === '1';
+        return `<label class="tracker-item ${checked ? 'checked' : ''}" id="item_${key}">
+          <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleChapter('${subject}','${ch}',this)">
+          ${ch}
+        </label>`;
+      }).join('') +
+      `<div class="progress-bar" style="margin-top:1rem"><div class="progress-fill" id="prog_${subject}" style="width:${getProgress(subject)}%"></div></div>`;
+    grid.appendChild(card);
+  }
+  updateStats();
+}
+
+function toggleChapter(subject, ch, el) {
+  const key = `tracker_${subject}_${ch}`;
+  localStorage.setItem(key, el.checked ? '1' : '0');
+  const item = document.getElementById(`item_${key}`);
+  if (item) item.classList.toggle('checked', el.checked);
+  document.getElementById(`prog_${subject}`).style.width = getProgress(subject) + '%';
+  updateStats();
+}
+
+function getProgress(subject) {
+  const chs = chapters[subject];
+  const done = chs.filter(ch => localStorage.getItem(`tracker_${subject}_${ch}`) === '1').length;
+  return Math.round((done / chs.length) * 100);
+}
+
+function updateStats() {
+  const mp = getProgress('Maths');
+  const pp = getProgress('Physics');
+  const cp = getProgress('Chemistry');
+  document.getElementById('mathBar').style.width = mp + '%';
+  document.getElementById('physBar').style.width = pp + '%';
+  document.getElementById('chemBar').style.width = cp + '%';
+  document.getElementById('mathPct').textContent = mp + '%';
+  document.getElementById('physPct').textContent = pp + '%';
+  document.getElementById('chemPct').textContent = cp + '%';
+}
+
+buildTracker();
+
+// ---- POMODORO TIMER ----
+let timerInterval, timeLeft = 25 * 60, isRunning = false, currentMode = 'Focus';
+function setMode(min, sec, label) {
+  clearInterval(timerInterval);
+  isRunning = false;
+  timeLeft = min * 60 + sec;
+  currentMode = label;
+  document.getElementById('timerDisplay').textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  document.getElementById('startBtn').textContent = '▶ Start';
+  document.getElementById('timerLabel').textContent = label === 'Focus' ? 'Stay focused for 25 minutes!' : 'Take a break, you deserve it!';
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+}
+function startTimer() {
+  if (isRunning) {
+    clearInterval(timerInterval);
+    isRunning = false;
+    document.getElementById('startBtn').textContent = '▶ Resume';
+  } else {
+    isRunning = true;
+    document.getElementById('startBtn').textContent = '⏸ Pause';
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+      document.getElementById('timerDisplay').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        document.getElementById('startBtn').textContent = '▶ Start';
+        alert(currentMode === 'Focus' ? '🎉 Focus session complete! Take a break!' : '⏰ Break over! Time to focus!');
+      }
+    }, 1000);
+  }
+}
+function resetTimer() {
+  clearInterval(timerInterval);
+  isRunning = false;
+  timeLeft = 25 * 60;
+  document.getElementById('timerDisplay').textContent = '25:00';
+  document.getElementById('startBtn').textContent = '▶ Start';
+}
+
+// ---- AI DOUBT SOLVER ----
+let savedKey = localStorage.getItem('gemini_key') || '';
+if (savedKey) document.getElementById('apiKey').value = savedKey;
+
+function saveKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (key) {
+    localStorage.setItem('gemini_key', key);
+    savedKey = key;
+    addMessage('ai', '✅ API key saved! Now ask me any doubt about Maths, Physics or Chemistry!');
+  }
+}
+
+function addMessage(type, text) {
+  const box = document.getElementById('chatBox');
+  const msg = document.createElement('div');
+  msg.className = `chat-msg ${type}`;
+  msg.textContent = text;
+  box.appendChild(msg);
+  box.scrollTop = box.scrollHeight;
+  return msg;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const question = input.value.trim();
+  if (!question) return;
+  const key = localStorage.getItem('gemini_key') || '';
+  if (!key) { addMessage('ai', '⚠️ Please enter your Gemini API key first!'); return; }
+  input.value = '';
+  addMessage('user', question);
+  const typing = addMessage('ai typing', '🤔 Thinking...');
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: `You are a friendly Indian Class 12 PCM tutor. Explain in simple language a student would understand. Keep it concise and clear. Use simple examples. Student asks: ${question}` }] }] })
+    });
+    const data = await res.json();
+    typing.remove();
+    const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, could not get answer. Please try again!';
+    addMessage('ai', answer);
+  } catch {
+    typing.remove();
+    addMessage('ai', '❌ Error! Please check your API key and internet connection.');
+  }
+}
+
+function askQuestion(q) {
+  document.getElementById('userInput').value = q;
+  sendMessage();
+}
+</script>
+</body>
+</html>
